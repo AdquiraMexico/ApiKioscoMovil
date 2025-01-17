@@ -22,7 +22,7 @@ public class IpAddressPropertyDefiner extends PropertyDefinerBase {
 
         String os = System.getProperty("os.name").toLowerCase();
 
-        if(os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0) {
+        if(os.contains("nix") || os.contains("nux")) {
             NetworkInterface ni = NetworkInterface.getByName("eth0");
             if (ni == null && NetworkInterface.networkInterfaces().findFirst().isPresent()) {
                     ni = NetworkInterface.networkInterfaces().findFirst().orElseThrow(() -> new CustomeException("Interface don't found"));
