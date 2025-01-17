@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+	<property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/api-kiosco-movil.log}"/>
+	<property name="FILE_LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX}} ${LOG_LEVEL_PATTERN:-%5p} --- %-40.40logger{50} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+	<define name="ipaddress" class="mx.com.flap.apikioscomovil.log.IpAddressPropertyDefiner" />
+
+	<appender name="DAILY"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<encoder>
+			<pattern>${FILE_LOG_PATTERN}</pattern>
+		</encoder>
+		<file>${LOG_FILE}-${ipaddress}.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_FILE}-${ipaddress}.log.%d{yyyy-MM-dd}</fileNamePattern>
+		</rollingPolicy>
+	</appender>
+
+	<!-- API LOGS	-->
+    <logger name="mx.com.flap.apikioscomovil" level="DEBUG" />
+
+	<!-- PLUGIN LOGS	-->
+	<logger name="net" level="WARN" />
+	<logger name="mx" level="DEBUG" />
+	<logger name="org" level="WARN" />
+	<logger name="com" level="ERROR" />
+
+    <root level="DEBUG">
+		<appender-ref ref="DAILY" />
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</configuration>
