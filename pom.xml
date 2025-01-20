@@ -11,6 +11,7 @@
     <groupId>mx.com.flap</groupId>
     <artifactId>ApiKioscoMovil</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>
     <name>ApiKioscoMovil</name>
     <description>ApiKioscoMovil</description>
     <url/>
