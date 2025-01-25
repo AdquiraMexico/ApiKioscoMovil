@@ -12,7 +12,7 @@ import java.io.Serializable;
 @ToString
 @Entity
 @Table(name = "TKM_MEDIOPAGO")
-@SequenceGenerator( name="sequence_mediopago", sequenceName="TKM_MEDIOPAGO_SEQ")
+@SequenceGenerator( name="sequence_mediopago", sequenceName="TKM_MEDIOPAGO_SEQ", allocationSize = 1)
 public class MedioPago implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator="sequence_mediopago")

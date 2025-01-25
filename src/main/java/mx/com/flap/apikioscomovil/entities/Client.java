@@ -13,7 +13,7 @@ import java.io.Serializable;
 @ToString
 @Entity
 @Table(name = "TKM_CLIENTE")
-@SequenceGenerator( name="sequence_client", sequenceName="TKM_CLIENTE_SEQ")
+@SequenceGenerator( name="sequence_client", sequenceName="TKM_CLIENTE_SEQ", allocationSize = 1)
 public class Client implements Serializable {
 
     @Id
