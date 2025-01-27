@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.com.flap.apikioscomovil.entities.User;
 import mx.com.flap.apikioscomovil.handlers.CustomeException;
-import mx.com.flap.apikioscomovil.repositories.UserRepostory;
+import mx.com.flap.apikioscomovil.repositories.UserRepository;
 import mx.com.flap.apikioscomovil.resources.AuthenticationResource;
 import mx.com.flap.apikioscomovil.service.JwtService;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +47,7 @@ public class JwtServiceImpl implements JwtService {
     @Value("${encrypt.isDev}")
     private Boolean isDev;
 
-    private final UserRepostory userRepository;
+    private final UserRepository userRepository;
 
     public static final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
@@ -64,7 +64,7 @@ public class JwtServiceImpl implements JwtService {
             Claims claims = getClaimsCustom(roles, username);
             if (Boolean.TRUE.equals(isDev)) {
                 Mac sha256HMAC = Mac.getInstance(HMAC);
-                SecretKeySpec secretKey = new SecretKeySpec(SECRET.getBytes(),HMAC);
+                SecretKeySpec secretKey = new SecretKeySpec(SECRET.getBytes(), HMAC);
                 sha256HMAC.init(secretKey);
 
                 resource.setToken(Jwts.builder()
@@ -93,10 +93,10 @@ public class JwtServiceImpl implements JwtService {
             return resource;
 
         } catch (JsonProcessingException e) {
-            log.error("Error interno : {}" , e.getMessage());
+            log.error("Error interno : {}", e.getMessage());
             throw new CustomeException("Error when try to create token", e.getMessage());
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            log.error("Error interno : {}" , e.getMessage());
+            log.error("Error interno : {}", e.getMessage());
             throw new CustomeException(e.getMessage());
         }
     }
@@ -105,10 +105,9 @@ public class JwtServiceImpl implements JwtService {
     public Boolean validate(String token) {
         try {
             Claims claims = getClaims(token);
-
             return true;
         } catch (JwtException | IllegalArgumentException ex) {
-            log.error("{}",ex);
+            log.error("error: {}", ex);
             return false;
         }
     }
@@ -120,13 +119,13 @@ public class JwtServiceImpl implements JwtService {
             Mac sha256HMAC = null;
             try {
                 sha256HMAC = Mac.getInstance(HMAC);
-                SecretKeySpec secretKey = new SecretKeySpec(SECRET.getBytes(),HMAC);
+                SecretKeySpec secretKey = new SecretKeySpec(SECRET.getBytes(), HMAC);
                 sha256HMAC.init(secretKey);
                 return Jwts.parser()
                         .setSigningKey(secretKey)
                         .parseClaimsJws(resolve(token)).getBody();
-            } catch (NoSuchAlgorithmException | InvalidKeyException e ) {
-                log.error("Error interno : {}" , e.getMessage());
+            } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+                log.error("Error interno : {}", e.getMessage());
                 throw new CustomeException(e.getMessage());
             }
 
@@ -152,7 +151,7 @@ public class JwtServiceImpl implements JwtService {
                             .addMixIn(SimpleGrantedAuthority.class, SimpleGrantedAuthorityMixin.class)
                             .readValue(roles.toString().getBytes(), SimpleGrantedAuthority[].class));
         } catch (IOException e) {
-            log.error("Error interno : {}" , e.getMessage());
+            log.error("Error interno : {}", e.getMessage());
             throw new CustomeException("Error al obtener los roles", e.getMessage());
         }
     }
@@ -182,23 +181,21 @@ public class JwtServiceImpl implements JwtService {
         return claims;
     }
 
-    public Boolean failedAttemps(String username){
+    public Boolean failedAttemps(String username) {
         User user = this.userRepository.findByUsername(username).orElseThrow(() -> new CustomeException("El usuario no éxiste"));
 
-        if (user != null){
-            if (user.getAttempts() == null) {
-                user.setAttempts(1L);
+        if (user.getAttempts() == null) {
+            user.setAttempts(1L);
+            user = this.userRepository.save(user);
+        } else {
+            if (user.getAttempts() + 1 < 5) {
+                user.setAttempts(user.getAttempts() + 1);
                 user = this.userRepository.save(user);
-            }else {
-                if (user.getAttempts() + 1 < 5){
-                    user.setAttempts(user.getAttempts() + 1);
+            } else {
+                if (user.getAttempts() + 1 == 5) {
+                    user.setBlocked(true);
+                    user.setAttempts(5L);
                     user = this.userRepository.save(user);
-                }else {
-                    if (user.getAttempts()+1 == 5){
-                        user.setBlocked(true);
-                        user.setAttempts(5L);
-                        user = this.userRepository.save(user);
-                    }
                 }
             }
         }

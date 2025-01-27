@@ -4,9 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.com.flap.apikioscomovil.entities.User;
 import mx.com.flap.apikioscomovil.handlers.CustomeException;
-import mx.com.flap.apikioscomovil.repositories.UserRepostory;
+import mx.com.flap.apikioscomovil.repositories.UserRepository;
 import mx.com.flap.apikioscomovil.service.UserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,12 +20,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService, UserDetailsService {
 
-    private final UserRepostory userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = this.userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("El usuario no existe"));
-        if (user.getBlocked()) {
+        if (Boolean.TRUE == user.getBlocked()) {
             throw new CustomeException("Unauthorized");
         }
 
