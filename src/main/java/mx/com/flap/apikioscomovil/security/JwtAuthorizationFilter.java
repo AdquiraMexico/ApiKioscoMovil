@@ -29,6 +29,18 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         this.jwtService = jwtService;
     }
 
+    /**
+     * Filters incoming HTTP requests to enforce JWT authentication and authorization.
+     * This method checks for the presence and validity of a JWT token in the "Authorization" header.
+     * If the token is absent or invalid, it responds with a 401 Unauthorized error.
+     * If the token is valid, it extracts the user's roles and sets the authentication context.
+     *
+     * @param request  the HttpServletRequest object containing the client's request
+     * @param response the HttpServletResponse object to send the response
+     * @param chain    the FilterChain object to pass request and response to the next filter in the chain
+     * @throws IOException      in case of I/O errors during response writing
+     * @throws ServletException in case of general servlet-related exceptions
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
 

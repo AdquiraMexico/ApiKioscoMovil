@@ -40,6 +40,15 @@ public class SecurityConfig {
         auth.userDetailsService(this.userDetailsService).passwordEncoder(passwordEncoder());
     }
 
+    /**
+     * Configures a security filter chain to handle requests matching a predefined whitelist.
+     * The filter chain disables CORS, CSRF, headers, and HTTP basic authentication. It allows
+     * public access to the URLs specified in the whitelist and enforces stateless session management.
+     *
+     * @param http the HttpSecurity configuration object used to build the filter chain
+     * @return a configured SecurityFilterChain instance
+     * @throws Exception if an error occurs during the filter chain configuration
+     */
     @Bean
     @Order(0)
     public SecurityFilterChain whitelistFilterChain(HttpSecurity http) throws Exception {
@@ -56,6 +65,19 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * Configures the main security filter chain to manage authentication and authorization rules.
+     * This method sets up the following:
+     * - Disables CORS, HTTP basic authentication, CSRF protection, and security headers.
+     * - Requires all requests to be authenticated.
+     * - Configures the session management to use stateless sessions.
+     * - Adds JWT-based authentication and authorization filters.
+     * - Configures a custom authentication manager.
+     *
+     * @param http the HttpSecurity configuration object used to build the security filter chain
+     * @return a configured SecurityFilterChain instance
+     * @throws Exception if an error occurs during the filter chain configuration
+     */
     @Bean
     @Order(1)
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -75,6 +97,16 @@ public class SecurityConfig {
 
     }
 
+    /**
+     * Configures and provides a custom AuthenticationManager bean to manage authentication mechanisms
+     * in the Spring Security context. This method sets up the AuthenticationManager by utilizing the
+     * shared object from HttpSecurity and configuring it with a UserDetailsService and a password
+     * encoder.
+     *
+     * @param http the HttpSecurity configuration object used to create and configure the AuthenticationManager
+     * @return a fully initialized AuthenticationManager instance
+     * @throws Exception if an error occurs during the AuthenticationManager configuration
+     */
     @Bean("authenticationManager")
     protected AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -82,6 +114,13 @@ public class SecurityConfig {
         return builder.build();
     }
 
+    /**
+     * Creates and configures a CorsConfigurationSource bean to define CORS policies for the application.
+     * The configuration allows requests from any origin, permits a wide range of HTTP methods and headers,
+     * and disables credential sharing in CORS requests.
+     *
+     * @return an instance of CorsConfigurationSource with the defined CORS settings
+     */
     @Bean("corsConfigurationSource")
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
@@ -96,6 +135,13 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Creates a bean of type BCryptPasswordEncoder for encrypting passwords.
+     * This password encoder uses BCrypt hashing with a strength of 10 by default.
+     * It is typically used in the context of Spring Security to securely store and validate passwords.
+     *
+     * @return an instance of BCryptPasswordEncoder
+     */
     @Bean
     public static BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

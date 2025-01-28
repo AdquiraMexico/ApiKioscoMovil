@@ -39,6 +39,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/api/login", "POST"));
     }
 
+    /**
+     * Attempts to authenticate the user based on the request's credentials. This method retrieves
+     * authentication data from the Authorization header or the request body, validates it, and
+     * generates an authentication token, delegating the actual authentication process to the
+     * authentication manager.
+     *
+     * @param request  the HTTP request containing the user credentials.
+     * @param response the HTTP response associated with the request.
+     * @return an Authentication object if the authentication process is successful.
+     * @throws AuthenticationException if the authentication process fails due to issues like
+     *         invalid credentials or malformed requests.
+     */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
@@ -69,6 +81,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
 
 
+    /**
+     * Handles successful authentication for a user and generates a JWT token.
+     * This method creates a token based on the authentication result, sets the
+     * token in the Authorization header, and writes the token as a JSON response.
+     *
+     * @param request the HTTP request that triggered the authentication
+     * @param response the HTTP response to be sent back to the client
+     * @param chain the filter chain to continue processing the request
+     * @param authResult the result of successful authentication, containing user details and credentials
+     * @throws IOException if an input or output exception occurs while writing the response
+     * @throws ServletException if an error occurs during the request processing
+     */
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
 
@@ -80,6 +104,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setContentType("application/json");
     }
 
+    /**
+     * Handles unsuccessful authentication attempts.
+     * This method logs the username, responds with a JSON body detailing the authentication error,
+     * and sets the HTTP status to 401 (Unauthorized). If multiple failed authentication attempts
+     * are detected for a user, their account may be blocked, and a corresponding message is returned.
+     *
+     * @param request  the HttpServletRequest object containing the client request.
+     * @param response the HttpServletResponse object for sending the response to the client.
+     * @param failed   the AuthenticationException that represents the authentication failure.
+     * @throws IOException      if an input or output exception occurs during the response writing process.
+     * @throws ServletException if a servlet-specific error occurs.
+     */
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         String username = String.valueOf(request.getAttribute("username"));

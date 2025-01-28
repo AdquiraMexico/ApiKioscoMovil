@@ -51,6 +51,13 @@ public class JwtServiceImpl implements JwtService {
 
     public static final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
+    /**
+     * Creates an AuthenticationResource instance with a JWT token and user details, based on the provided authentication.
+     *
+     * @param auth the authentication object containing user credentials and authorities.
+     * @return an instance of AuthenticationResource containing a JWT token and user details.
+     * @throws CustomeException if an internal error occurs or if the user does not exist.
+     */
     @Override
     public AuthenticationResource create(Authentication auth) {
         try {
@@ -101,6 +108,13 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
+    /**
+     * Validates a JWT token by attempting to parse its claims.
+     * Returns whether the token is valid or not.
+     *
+     * @param token the JWT token to be validated
+     * @return {@code true} if the token is valid, otherwise {@code false}
+     */
     @Override
     public Boolean validate(String token) {
         try {
@@ -112,6 +126,16 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
+    /**
+     * Extracts and returns the claims from the provided JWT token.
+     * The claims are parsed based on the signing key. In development mode,
+     * it uses a specific HMAC signing algorithm while in other environments,
+     * a different secret key is used for validation.
+     *
+     * @param token the JWT token from which claims need to be extracted
+     * @return the claims extracted from the given token
+     * @throws CustomeException if an error occurs during token parsing or signing key generation
+     */
     @Override
     public Claims getClaims(String token) {
         if (Boolean.TRUE.equals(isDev)) {
@@ -136,11 +160,23 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
+    /**
+     * Extracts the username from the provided token by retrieving its subject field.
+     *
+     * @param token the token from which the username will be extracted
+     * @return the username extracted from the token
+     */
     @Override
     public String getUsername(String token) {
         return getClaims(token).getSubject();
     }
 
+    /**
+     * Retrieves roles from a provided token and converts them into a collection of GrantedAuthority objects.
+     *
+     * @param token the token containing the roles information
+     * @return a collection of GrantedAuthority representing the roles associated with the token
+     */
     @Override
     public Collection<GrantedAuthority> getRoles(String token) {
         try {
@@ -156,6 +192,12 @@ public class JwtServiceImpl implements JwtService {
         }
     }
 
+    /**
+     * Resolves a given token by removing a predefined prefix if present.
+     *
+     * @param token the token to be processed; may include a specific prefix
+     * @return the token without the predefined prefix if it exists, or null if the token is null or does not contain the prefix
+     */
     @Override
     public String resolve(String token) {
         if (token != null && token.startsWith(TOKENPREFIX))
@@ -164,6 +206,15 @@ public class JwtServiceImpl implements JwtService {
             return null;
     }
 
+    /**
+     * Generates and populates a `Claims` object with authority, user, and additional information
+     * retrieved from the database based on the provided user details.
+     *
+     * @param roles A collection of granted authorities associated with the user.
+     * @param user The username of the user whose details are to be retrieved and included in the claims.
+     * @return A `Claims` object containing user-specific information such as id, profile, and client ID.
+     * @throws JsonProcessingException If an error occurs while serializing roles into JSON.
+     */
     private Claims getClaimsCustom(Collection<? extends GrantedAuthority> roles, String user) throws JsonProcessingException {
         Claims claims = Jwts.claims();
         claims.put("authorities", new ObjectMapper().writeValueAsString(roles));
@@ -181,6 +232,14 @@ public class JwtServiceImpl implements JwtService {
         return claims;
     }
 
+    /**
+     * Increments the failed login attempts for a user identified by the provided username.
+     * If the user's failed attempts reach 5, the account is marked as blocked.
+     *
+     * @param username the username of the user whose failed login attempts are to be incremented
+     * @return a Boolean value indicating whether the user's account is blocked
+     * @throws CustomeException if the user does not exist
+     */
     public Boolean failedAttemps(String username) {
         User user = this.userRepository.findByUsername(username).orElseThrow(() -> new CustomeException("El usuario no éxiste"));
 
