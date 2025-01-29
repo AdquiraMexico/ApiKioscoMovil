@@ -13,12 +13,12 @@ import mx.com.flap.apikioscomovil.entities.User;
 import mx.com.flap.apikioscomovil.handlers.CustomeException;
 import mx.com.flap.apikioscomovil.repositories.UserRepository;
 import mx.com.flap.apikioscomovil.resources.AuthenticationResource;
+import mx.com.flap.apikioscomovil.security.SimpleGrantedAuthorityMixin;
 import mx.com.flap.apikioscomovil.service.JwtService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.jackson2.SimpleGrantedAuthorityMixin;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
@@ -41,8 +41,8 @@ import static mx.com.flap.apikioscomovil.constants.ConstantsJwt.SECRET;
 public class JwtServiceImpl implements JwtService {
 
     private static final Long EXPIRATION = 3600 * 1000L;
-
     private static final String TOKENPREFIX = "Bearer ";
+    private static final String INTERNALERROR = "Error interno : ";
 
     @Value("${encrypt.isDev}")
     private Boolean isDev;
@@ -100,10 +100,10 @@ public class JwtServiceImpl implements JwtService {
             return resource;
 
         } catch (JsonProcessingException e) {
-            log.error("Error interno : {}", e.getMessage());
+            log.error("{} {}", INTERNALERROR, e.getMessage());
             throw new CustomeException("Error when try to create token", e.getMessage());
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            log.error("Error interno : {}", e.getMessage());
+            log.error("{} {}", INTERNALERROR, e.getMessage());
             throw new CustomeException(e.getMessage());
         }
     }
@@ -121,7 +121,7 @@ public class JwtServiceImpl implements JwtService {
             Claims claims = getClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException ex) {
-            log.error("error: {}", ex);
+            log.error("error: {}", ex.getMessage());
             return false;
         }
     }
@@ -140,7 +140,7 @@ public class JwtServiceImpl implements JwtService {
     public Claims getClaims(String token) {
         if (Boolean.TRUE.equals(isDev)) {
 
-            Mac sha256HMAC = null;
+            Mac sha256HMAC;
             try {
                 sha256HMAC = Mac.getInstance(HMAC);
                 SecretKeySpec secretKey = new SecretKeySpec(SECRET.getBytes(), HMAC);
